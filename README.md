@@ -157,3 +157,6 @@ Put components, hooks, and utilities in `src/` next to `app/` (for example `src/
 | `.vscode/settings.json` | Turns off Copilot inline completions for this workspace. |
 
 If an AI tool starts writing code for you anyway, stop, and ask it to explain instead. That is the tool ignoring the rules, and the grade is still yours.
+
+For Week Two I used Codex to generate the work order data and row component and build the home screen step by step
+Codex also explained the code and ran TypeScript and browser checks
