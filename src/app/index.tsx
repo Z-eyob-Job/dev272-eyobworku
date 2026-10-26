@@ -1,44 +1,91 @@
-import { StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  FlatList,
+  StyleSheet,
+} from "react-native";
+import { workOrders } from "../data/workOrders";
+import WorkOrderRow from "../components/WorkOrderRow";
 
-// This is the home screen (route "/").
-// Week 1: change the two lines marked 👇, run the app, commit, push.
 export default function Index() {
-  // 👇 Week 1: replace with your name
-  const studentName = "Eyob Worku";
-  // 👇 Week 1: replace with something you want to build this quarter
-  const appIdea = "an app idea I have";
+  const [query, setQuery] = useState("");
+
+  function handleClear() {
+    console.log("Searching for:", query);
+    setQuery("");
+  }
+
+  const header = (
+    <View style={styles.header}>
+      <Text style={styles.title}>Work Orders</Text>
+      <View style={styles.searchRow}>
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search by unit or issue"
+          style={styles.input}
+        />
+        <Pressable onPress={handleClear} style={styles.button}>
+          <Text style={styles.buttonText}>Clear</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+
+  const filtered = workOrders.filter(
+    (item) =>
+      item.unit.toLowerCase().includes(query.toLowerCase()) ||
+      item.issue.toLowerCase().includes(query.toLowerCase()),
+  );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>DEV 272 · Mobile Application Development</Text>
-      <Text style={styles.body}>Hello, I am {studentName}.</Text>
-      <Text style={styles.body}>This quarter I want to build {appIdea}.</Text>
-      <Text style={styles.hint}>Edit src/app/index.tsx to change this screen.</Text>
-    </View>
+    <FlatList
+      data={filtered}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => <WorkOrderRow item={item} />}
+      ListHeaderComponent={header}
+      style={styles.list}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  list: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-    gap: 12,
+    backgroundColor: "#fff",
+  },
+  header: {
+    padding: 16,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "600",
-    textAlign: "center",
+    fontSize: 26,
+    fontWeight: "bold",
+    marginBottom: 12,
   },
-  body: {
-    fontSize: 16,
-    textAlign: "center",
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  hint: {
-    marginTop: 24,
-    fontSize: 12,
-    color: "#6b7280",
-    textAlign: "center",
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    marginRight: 8,
+  },
+  button: {
+    backgroundColor: "#2563eb",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
