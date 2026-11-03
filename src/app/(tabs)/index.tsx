@@ -7,8 +7,8 @@ import {
   FlatList,
   StyleSheet,
 } from "react-native";
-import { workOrders } from "../data/workOrders";
-import WorkOrderRow from "../components/WorkOrderRow";
+import { workOrders } from "../../data/workOrders";
+import WorkOrderRow from "../../components/WorkOrderRow";
 
 export default function Index() {
   const [query, setQuery] = useState("");
