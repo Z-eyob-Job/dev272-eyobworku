@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "expo-router";
 import {
   View,
   Text,
@@ -45,7 +46,19 @@ export default function Index() {
     <FlatList
       data={filtered}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <WorkOrderRow item={item} />}
+      renderItem={({ item }) => (
+        <Link
+          href={{
+            pathname: "/work-orders/[id]",
+            params: { id: item.id },
+          }}
+          asChild
+        >
+          <Pressable>
+            <WorkOrderRow item={item} />
+          </Pressable>
+        </Link>
+      )}
       ListHeaderComponent={header}
       style={styles.list}
     />
