@@ -30,6 +30,10 @@ export default function WorkOrderDetail() {
       <Text style={styles.value}>{workOrder.issue}</Text>
       <Text style={styles.label}>Priority</Text>
       <Text style={styles.value}>{workOrder.priority}</Text>
+      <Text style={styles.label}>Estimated time</Text>
+      <Text style={styles.value}>{workOrder.estimatedMinutes} min</Text>
+      <Text style={styles.label}>Permission to enter</Text>
+      <Text style={styles.value}>{workOrder.permissionToEnter ? "Yes" : "No"}</Text>
       {completedJob ? (
         <>
           <Text style={styles.status}>
