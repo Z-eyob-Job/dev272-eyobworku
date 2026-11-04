@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { router } from "expo-router";
+import { Stack, router, useLocalSearchParams } from "expo-router";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -24,7 +24,12 @@ import {
 } from "../utils/workOrderSchema";
 
 export default function AddWorkOrderScreen() {
-  const { addWorkOrder } = useWorkOrders();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { workOrders, addWorkOrder, updateWorkOrder } = useWorkOrders();
+  const existingWorkOrder = id
+    ? workOrders.find((workOrder) => workOrder.id === id)
+    : undefined;
+  const isEditing = existingWorkOrder !== undefined;
   const [saveError, setSaveError] = useState<string | null>(null);
   const {
     control,
@@ -34,13 +39,21 @@ export default function AddWorkOrderScreen() {
   } = useForm<WorkOrderInput, unknown, WorkOrderOutput>({
     resolver: zodResolver(workOrderSchema),
     mode: "onBlur",
-    defaultValues: {
-      unit: "",
-      issue: "",
-      estimatedMinutes: "",
-      priority: "medium",
-      permissionToEnter: false,
-    },
+    defaultValues: existingWorkOrder
+      ? {
+          unit: existingWorkOrder.unit,
+          issue: existingWorkOrder.issue,
+          estimatedMinutes: existingWorkOrder.estimatedMinutes.toString(),
+          priority: existingWorkOrder.priority,
+          permissionToEnter: existingWorkOrder.permissionToEnter,
+        }
+      : {
+          unit: "",
+          issue: "",
+          estimatedMinutes: "",
+          priority: "medium",
+          permissionToEnter: false,
+        },
   });
 
   async function onSubmit(values: WorkOrderOutput) {
@@ -48,15 +61,19 @@ export default function AddWorkOrderScreen() {
 
     const workOrder: WorkOrder = {
       ...values,
-      id: Date.now().toString(),
+      id: existingWorkOrder ? existingWorkOrder.id : Date.now().toString(),
       unit: values.unit.toUpperCase(),
     };
 
     try {
       await saveWorkOrder(workOrder);
-      addWorkOrder(workOrder);
+      if (isEditing) {
+        updateWorkOrder(workOrder);
+      } else {
+        addWorkOrder(workOrder);
+      }
 
-      const message = `Unit ${workOrder.unit} was added.`;
+      const message = `Unit ${workOrder.unit} was ${isEditing ? "updated" : "added"}.`;
 
       if (Platform.OS === "web") {
         window.alert(message);
@@ -73,11 +90,23 @@ export default function AddWorkOrderScreen() {
     }
   }
 
+  if (id !== undefined && !existingWorkOrder) {
+    return (
+      <View style={[styles.container, styles.content]}>
+        <Stack.Screen options={{ title: "Not found" }} />
+        <Text>Work order not found</Text>
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      <Stack.Screen
+        options={{ title: isEditing ? "Edit work order" : "New work order" }}
+      />
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}
@@ -219,7 +248,11 @@ export default function AddWorkOrderScreen() {
           ]}
         >
           <Text style={styles.saveButtonText}>
-            {isSubmitting ? "Saving…" : "Save work order"}
+            {isSubmitting
+              ? "Saving…"
+              : isEditing
+                ? "Save changes"
+                : "Save work order"}
           </Text>
         </Pressable>
       </ScrollView>

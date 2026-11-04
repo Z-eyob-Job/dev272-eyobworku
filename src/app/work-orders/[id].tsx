@@ -1,5 +1,5 @@
-import { Stack, useLocalSearchParams } from "expo-router";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { Stack, router, useLocalSearchParams } from "expo-router";
+import { View, ScrollView, Text, Pressable, StyleSheet } from "react-native";
 import { useWorkOrders } from "../../context/WorkOrdersContext";
 import { useCompletedJobs } from "../../context/CompletedJobsContext";
 
@@ -11,7 +11,7 @@ export default function WorkOrderDetail() {
 
   if (!workOrder) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, styles.content]}>
         <Stack.Screen options={{ title: "Not found" }} />
         <Text style={styles.value}>No work order was found with ID {id}.</Text>
       </View>
@@ -21,7 +21,7 @@ export default function WorkOrderDetail() {
   const completedJob = completedJobs.find((job) => job.id === workOrder.id);
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Stack.Screen options={{ title: `Unit ${workOrder.unit}` }} />
       <Text style={styles.label}>ID</Text>
       <Text style={styles.value}>{workOrder.id}</Text>
@@ -35,6 +35,15 @@ export default function WorkOrderDetail() {
       <Text style={styles.value}>{workOrder.estimatedMinutes} min</Text>
       <Text style={styles.label}>Permission to enter</Text>
       <Text style={styles.value}>{workOrder.permissionToEnter ? "Yes" : "No"}</Text>
+      <Pressable
+        onPress={() =>
+          router.push({ pathname: "/add", params: { id: workOrder.id } })
+        }
+        style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}
+        accessibilityRole="button"
+      >
+        <Text style={styles.editButtonText}>Edit</Text>
+      </Pressable>
       {completedJob ? (
         <>
           <Text style={styles.status}>
@@ -61,15 +70,17 @@ export default function WorkOrderDetail() {
           <Text style={styles.buttonText}>Mark complete</Text>
         </Pressable>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
     backgroundColor: "#fff",
+  },
+  content: {
+    padding: 24,
   },
   label: {
     fontSize: 14,
@@ -101,5 +112,17 @@ const styles = StyleSheet.create({
   },
   undoButton: {
     backgroundColor: "#6b7280",
+  },
+  editButton: {
+    borderWidth: 1,
+    borderColor: "#2563eb",
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  editButtonText: {
+    color: "#2563eb",
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });
