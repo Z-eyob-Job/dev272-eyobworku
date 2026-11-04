@@ -2,6 +2,9 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  Pressable,
+  Switch,
+  View,
   Text,
   TextInput,
   StyleSheet,
@@ -101,6 +104,61 @@ export default function AddWorkOrderScreen() {
         {errors.estimatedMinutes && (
           <Text style={styles.error}>{errors.estimatedMinutes.message}</Text>
         )}
+
+        <Text style={styles.label}>Priority</Text>
+        <Controller
+          control={control}
+          name="priority"
+          render={({ field: { value, onChange } }) => (
+            <View style={styles.chipRow}>
+              {(["low", "medium", "high"] as const).map((priority) => (
+                <Pressable
+                  key={priority}
+                  onPress={() => onChange(priority)}
+                  style={[
+                    styles.chip,
+                    value === priority && styles.chipSelected,
+                  ]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: value === priority }}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      value === priority && styles.chipTextSelected,
+                    ]}
+                  >
+                    {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        />
+        {errors.priority && (
+          <Text style={styles.error}>{errors.priority.message}</Text>
+        )}
+
+        <Controller
+          control={control}
+          name="permissionToEnter"
+          render={({ field: { value, onChange } }) => (
+            <View style={styles.switchRow}>
+              <View style={styles.switchText}>
+                <Text style={styles.switchLabel}>Permission to enter</Text>
+                <Text style={styles.hint}>
+                  OK to enter if the resident isn't home
+                </Text>
+              </View>
+              <Switch
+                value={value}
+                onValueChange={onChange}
+                accessibilityLabel="Permission to enter"
+                accessibilityHint="OK to enter if the resident isn't home"
+              />
+            </View>
+          )}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -137,5 +195,45 @@ const styles = StyleSheet.create({
     color: "#dc2626",
     fontSize: 13,
     marginTop: 6,
+  },
+  chipRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  chip: {
+    flex: 1,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 24,
+  },
+  chipSelected: {
+    backgroundColor: "#2563eb",
+    borderColor: "#2563eb",
+  },
+  chipText: {
+    textAlign: "center",
+  },
+  chipTextSelected: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  switchRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 24,
+    gap: 12,
+  },
+  switchText: {
+    flex: 1,
+  },
+  switchLabel: {
+    fontWeight: "bold",
+  },
+  hint: {
+    color: "#666",
+    fontSize: 13,
+    marginTop: 4,
   },
 });
