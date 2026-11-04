@@ -20,6 +20,7 @@ import {
 export default function AddWorkOrderScreen() {
   const {
     control,
+    setFocus,
     handleSubmit,
     formState: { errors },
   } = useForm<WorkOrderInput, unknown, WorkOrderOutput>({
@@ -47,14 +48,18 @@ export default function AddWorkOrderScreen() {
         <Controller
           control={control}
           name="unit"
-          render={({ field: { value, onChange, onBlur } }) => (
+          render={({ field: { value, onChange, onBlur, ref } }) => (
             <TextInput
+              ref={ref}
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
               placeholder="e.g. J17"
               autoCapitalize="characters"
               autoCorrect={false}
+              returnKeyType="next"
+              submitBehavior="submit"
+              onSubmitEditing={() => setFocus("issue")}
               style={[styles.input, errors.unit && styles.inputError]}
             />
           )}
@@ -65,8 +70,9 @@ export default function AddWorkOrderScreen() {
         <Controller
           control={control}
           name="issue"
-          render={({ field: { value, onChange, onBlur } }) => (
+          render={({ field: { value, onChange, onBlur, ref } }) => (
             <TextInput
+              ref={ref}
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -87,13 +93,16 @@ export default function AddWorkOrderScreen() {
         <Controller
           control={control}
           name="estimatedMinutes"
-          render={({ field: { value, onChange, onBlur } }) => (
+          render={({ field: { value, onChange, onBlur, ref } }) => (
             <TextInput
+              ref={ref}
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
               placeholder="e.g. 45"
               keyboardType="number-pad"
+              returnKeyType="done"
+              submitBehavior="blurAndSubmit"
               style={[
                 styles.input,
                 errors.estimatedMinutes && styles.inputError,
