@@ -1,8 +1,9 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useCompletedJobs } from "../../context/CompletedJobsContext";
-import { workOrders } from "../../data/workOrders";
+import { useWorkOrders } from "../../context/WorkOrdersContext";
 
 export default function SummaryScreen() {
+  const { workOrders } = useWorkOrders();
   const { completedJobs } = useCompletedJobs();
   const total = workOrders.length;
   const completed = completedJobs.length;

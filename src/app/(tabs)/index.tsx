@@ -8,10 +8,11 @@ import {
   FlatList,
   StyleSheet,
 } from "react-native";
-import { workOrders } from "../../data/workOrders";
+import { useWorkOrders } from "../../context/WorkOrdersContext";
 import WorkOrderRow from "../../components/WorkOrderRow";
 
 export default function Index() {
+  const { workOrders } = useWorkOrders();
   const [query, setQuery] = useState("");
 
   function handleClear() {

@@ -1,9 +1,10 @@
 import { Stack, useLocalSearchParams } from "expo-router";
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { workOrders } from "../../data/workOrders";
+import { useWorkOrders } from "../../context/WorkOrdersContext";
 import { useCompletedJobs } from "../../context/CompletedJobsContext";
 
 export default function WorkOrderDetail() {
+  const { workOrders } = useWorkOrders();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { completedJobs, markComplete, undoComplete } = useCompletedJobs();
   const workOrder = workOrders.find((item) => item.id === id);

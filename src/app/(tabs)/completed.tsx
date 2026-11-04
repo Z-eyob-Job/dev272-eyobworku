@@ -1,8 +1,9 @@
 import { FlatList, View, Text, StyleSheet } from "react-native";
 import { useCompletedJobs } from "../../context/CompletedJobsContext";
-import { workOrders } from "../../data/workOrders";
+import { useWorkOrders } from "../../context/WorkOrdersContext";
 
 export default function CompletedScreen() {
+  const { workOrders } = useWorkOrders();
   const { completedJobs } = useCompletedJobs();
 
   return (
