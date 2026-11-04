@@ -8,6 +8,7 @@ export default function RootLayout() {
       <CompletedJobsProvider>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="add" options={{ title: "New work order" }} />
         </Stack>
       </CompletedJobsProvider>
     </WorkOrdersProvider>

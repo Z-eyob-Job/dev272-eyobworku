@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import {
   View,
   Text,
@@ -34,6 +34,13 @@ export default function Index() {
           <Text style={styles.buttonText}>Clear</Text>
         </Pressable>
       </View>
+      <Pressable
+        onPress={() => router.push("/add")}
+        style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}
+        accessibilityRole="button"
+      >
+        <Text style={styles.addButtonText}>+ New work order</Text>
+      </Pressable>
     </View>
   );
 
@@ -101,5 +108,19 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  addButton: {
+    backgroundColor: "#2563eb",
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  addButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  pressed: {
+    opacity: 0.6,
   },
 });
