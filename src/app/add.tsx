@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Stack, router, useLocalSearchParams } from "expo-router";
+import { Stack, router } from "expo-router";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -14,9 +13,8 @@ import {
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useWorkOrders } from "../context/WorkOrdersContext";
-import type { WorkOrder } from "../data/workOrders";
-import { saveWorkOrder } from "../utils/saveWorkOrder";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createWorkOrder } from "@/api/workOrders";
 import {
   workOrderSchema,
   type WorkOrderInput,
@@ -24,79 +22,45 @@ import {
 } from "../utils/workOrderSchema";
 
 export default function AddWorkOrderScreen() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
-  const { workOrders, addWorkOrder, updateWorkOrder } = useWorkOrders();
-  const existingWorkOrder = id
-    ? workOrders.find((workOrder) => workOrder.id === id)
-    : undefined;
-  const isEditing = existingWorkOrder !== undefined;
-  const [saveError, setSaveError] = useState<string | null>(null);
   const {
     control,
     setFocus,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<WorkOrderInput, unknown, WorkOrderOutput>({
     resolver: zodResolver(workOrderSchema),
     mode: "onBlur",
-    defaultValues: existingWorkOrder
-      ? {
-          unit: existingWorkOrder.unit,
-          issue: existingWorkOrder.issue,
-          estimatedMinutes: existingWorkOrder.estimatedMinutes.toString(),
-          priority: existingWorkOrder.priority,
-          permissionToEnter: existingWorkOrder.permissionToEnter,
-        }
-      : {
-          unit: "",
-          issue: "",
-          estimatedMinutes: "",
-          priority: "medium",
-          permissionToEnter: false,
-        },
+    defaultValues: {
+      unit: "",
+      issue: "",
+      estimatedMinutes: "",
+      priority: "medium",
+      permissionToEnter: false,
+    },
   });
 
-  async function onSubmit(values: WorkOrderOutput) {
-    setSaveError(null);
+  const queryClient = useQueryClient();
 
-    const workOrder: WorkOrder = {
-      ...values,
-      id: existingWorkOrder ? existingWorkOrder.id : Date.now().toString(),
-      unit: values.unit.toUpperCase(),
-    };
-
-    try {
-      await saveWorkOrder(workOrder);
-      if (isEditing) {
-        updateWorkOrder(workOrder);
-      } else {
-        addWorkOrder(workOrder);
-      }
-
-      const message = `Unit ${workOrder.unit} was ${isEditing ? "updated" : "added"}.`;
-
+  const addWorkOrder = useMutation({
+    mutationFn: createWorkOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+      router.back();
+    },
+    onError: (e) => {
       if (Platform.OS === "web") {
-        window.alert(message);
-        router.back();
+        window.alert(`Could not save\n${e.message}`);
       } else {
-        Alert.alert("Work order saved", message, [
-          { text: "OK", onPress: () => router.back() },
-        ]);
+        Alert.alert("Could not save", e.message);
       }
-    } catch (error) {
-      setSaveError(
-        error instanceof Error ? error.message : "Unable to save. Please try again.",
-      );
-    }
-  }
+    },
+  });
 
-  if (id !== undefined && !existingWorkOrder) {
-    return (
-      <View style={[styles.container, styles.content]}>
-        <Stack.Screen options={{ title: "Not found" }} />
-        <Text>Work order not found</Text>
-      </View>
-    );
+  function onSubmit(values: WorkOrderOutput) {
+    addWorkOrder.mutate({
+      ...values,
+      unit: values.unit.toUpperCase(),
+    });
   }
 
   return (
@@ -104,9 +68,7 @@ export default function AddWorkOrderScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <Stack.Screen
-        options={{ title: isEditing ? "Edit work order" : "New work order" }}
-      />
+      <Stack.Screen options={{ title: "New work order" }} />
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}
@@ -235,24 +197,22 @@ export default function AddWorkOrderScreen() {
             </View>
           )}
         />
-        {saveError && <Text style={styles.error}>{saveError}</Text>}
         <Pressable
           onPress={handleSubmit(onSubmit)}
-          disabled={isSubmitting}
+          disabled={addWorkOrder.isPending}
           accessibilityRole="button"
-          accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }}
+          accessibilityState={{
+            disabled: addWorkOrder.isPending,
+            busy: addWorkOrder.isPending,
+          }}
           style={({ pressed }) => [
             styles.saveButton,
             pressed && styles.pressed,
-            isSubmitting && styles.disabled,
+            addWorkOrder.isPending && styles.disabled,
           ]}
         >
           <Text style={styles.saveButtonText}>
-            {isSubmitting
-              ? "Saving…"
-              : isEditing
-                ? "Save changes"
-                : "Save work order"}
+            {addWorkOrder.isPending ? "Saving…" : "Save work order"}
           </Text>
         </Pressable>
       </ScrollView>
