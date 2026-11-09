@@ -6,13 +6,22 @@ import {
   TextInput,
   Pressable,
   FlatList,
+  ActivityIndicator,
+  RefreshControl,
   StyleSheet,
 } from "react-native";
-import { useWorkOrders } from "../../context/WorkOrdersContext";
+import { useWorkOrdersQuery } from "@/hooks/workOrderQueries";
 import WorkOrderRow from "../../components/WorkOrderRow";
 
 export default function Index() {
-  const { workOrders } = useWorkOrders();
+  const {
+    data: workOrders,
+    isPending,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+  } = useWorkOrdersQuery();
   const [query, setQuery] = useState("");
 
   function handleClear() {
@@ -44,6 +53,25 @@ export default function Index() {
     </View>
   );
 
+  if (isPending) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.error}>{error.message}</Text>
+        <Pressable onPress={() => refetch()} accessibilityRole="button">
+          <Text style={styles.link}>Try again</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   const filtered = workOrders.filter(
     (item) =>
       item.unit.toLowerCase().includes(query.toLowerCase()) ||
@@ -68,6 +96,17 @@ export default function Index() {
         </Link>
       )}
       ListHeaderComponent={header}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefetching}
+          onRefresh={() => refetch()}
+        />
+      }
+      ListEmptyComponent={
+        <Text style={styles.empty}>
+          {query ? "No matches." : "No work orders yet."}
+        </Text>
+      }
       style={styles.list}
     />
   );
@@ -122,5 +161,24 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.6,
+  },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  error: {
+    color: "#b91c1c",
+    marginBottom: 12,
+  },
+  link: {
+    color: "#2563eb",
+    fontWeight: "bold",
+  },
+  empty: {
+    textAlign: "center",
+    color: "#666",
+    padding: 24,
   },
 });
