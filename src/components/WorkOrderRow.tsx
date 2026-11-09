@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import type { WorkOrder } from "../data/workOrders";
+import type { WorkOrder } from "@/api/workOrders";
 
 type Props = {
   item: WorkOrder;
