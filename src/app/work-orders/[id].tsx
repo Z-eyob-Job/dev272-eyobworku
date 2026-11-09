@@ -1,13 +1,31 @@
-import { Stack, router, useLocalSearchParams } from "expo-router";
-import { View, ScrollView, Text, Pressable, StyleSheet } from "react-native";
-import { useWorkOrders } from "../../context/WorkOrdersContext";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { View, ScrollView, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";
+import { useWorkOrderQuery } from "@/hooks/workOrderQueries";
 import { useCompletedJobs } from "../../context/CompletedJobsContext";
 
 export default function WorkOrderDetail() {
-  const { workOrders } = useWorkOrders();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { data: workOrder, isPending, isError, error, refetch } = useWorkOrderQuery(id);
   const { completedJobs, markComplete, undoComplete } = useCompletedJobs();
-  const workOrder = workOrders.find((item) => item.id === id);
+
+  if (isPending) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.error}>{error.message}</Text>
+        <Pressable onPress={() => refetch()} accessibilityRole="button">
+          <Text style={styles.link}>Try again</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   if (!workOrder) {
     return (
@@ -35,15 +53,6 @@ export default function WorkOrderDetail() {
       <Text style={styles.value}>{workOrder.estimatedMinutes} min</Text>
       <Text style={styles.label}>Permission to enter</Text>
       <Text style={styles.value}>{workOrder.permissionToEnter ? "Yes" : "No"}</Text>
-      <Pressable
-        onPress={() =>
-          router.push({ pathname: "/add", params: { id: workOrder.id } })
-        }
-        style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}
-        accessibilityRole="button"
-      >
-        <Text style={styles.editButtonText}>Edit</Text>
-      </Pressable>
       {completedJob ? (
         <>
           <Text style={styles.status}>
@@ -113,16 +122,18 @@ const styles = StyleSheet.create({
   undoButton: {
     backgroundColor: "#6b7280",
   },
-  editButton: {
-    borderWidth: 1,
-    borderColor: "#2563eb",
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     padding: 16,
-    borderRadius: 8,
-    marginBottom: 16,
   },
-  editButtonText: {
+  error: {
+    color: "#b91c1c",
+    marginBottom: 12,
+  },
+  link: {
     color: "#2563eb",
     fontWeight: "bold",
-    textAlign: "center",
   },
 });
