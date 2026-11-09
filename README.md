@@ -11,6 +11,70 @@ This is the starting point for every individual assignment in Weeks 1–6. You c
 
 ---
 
+## Week 5 Setup (Supabase)
+
+### 1. Create the table
+Create a Supabase project, open SQL Editor, select New query, and run this SQL.
+
+```sql
+create table public.work_orders (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  unit text not null,
+  issue text not null,
+  priority text not null check (priority in ('low', 'medium', 'high')),
+  "estimatedMinutes" integer not null check ("estimatedMinutes" between 5 and 480),
+  "permissionToEnter" boolean not null default false
+);
+
+grant select, insert on public.work_orders to anon;
+
+alter table public.work_orders enable row level security;
+
+create policy "Anyone can read work orders"
+  on public.work_orders for select
+  to anon
+  using (true);
+
+create policy "Anyone can add work orders"
+  on public.work_orders for insert
+  to anon
+  with check (true);
+
+insert into public.work_orders
+  (unit, issue, priority, "estimatedMinutes", "permissionToEnter")
+values
+  ('101', 'Kitchen faucet leaking under the sink', 'high', 45, true),
+  ('102', 'Bedroom door handle loose', 'low', 15, false),
+  ('103', 'Dishwasher not draining', 'medium', 60, true),
+  ('201', 'Air conditioner blowing warm air', 'high', 90, false),
+  ('202', 'Bathroom exhaust fan making noise', 'medium', 30, false),
+  ('203', 'Window screen needs replacement', 'low', 30, false),
+  ('301', 'Toilet running continuously', 'medium', 30, false),
+  ('302', 'Front door deadbolt will not lock', 'high', 45, false);
+```
+
+`"estimatedMinutes"` and `"permissionToEnter"` are quoted so the column names match the TypeScript type.
+
+### 2. Environment variables
+Create a file named `.env` in the project root with these two names:
+
+```
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_KEY=
+```
+
+Get the project URL and publishable key from your Supabase project settings. Look under **API Keys** for the publishable key. Use the publishable key, never the secret key. The values for grading are in my Canvas submission comment. `.env` is in `.gitignore`, so it is never committed.
+
+### 3. Run
+
+```
+pnpm install
+pnpm start
+```
+
+Restart `pnpm start` after editing `.env`, because Expo only reads it at startup.
+
 ## 1. Prerequisites (do this before Week 1 class if you can)
 
 | Tool | What to install | Check it works |
